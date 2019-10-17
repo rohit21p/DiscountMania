@@ -7,7 +7,11 @@ const server = http.createServer((req, res) => {
     if(req.url=="/sign-up") {
         parseBody(req);
     }
+    if(req.url=="/sign-in") {
+        parseBody(req);
+    }
     res.end();
+    console.log("request end");
 });
 
 function parseBody(req) {
