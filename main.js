@@ -11,6 +11,7 @@ const server = http.createServer((req, res) => {
         parseBody(req);
     }
     res.end();
+    body = [];
     console.log("request end");
 });
 
