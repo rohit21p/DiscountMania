@@ -1,4 +1,9 @@
 const http = require('http');
+const mongod = require('mongodb');
+
+const mongoc = mongod.MongoClient;
+let dbc;
+let dbi;
 
 let body = [];
 const server = http.createServer((req, res) => {
@@ -10,8 +15,8 @@ const server = http.createServer((req, res) => {
     if(req.url=="/sign-in") {
         parseBody(req);
     }
-    res.end();
     body = [];
+    res.end();
     console.log("request end");
 });
 
@@ -25,4 +30,15 @@ function parseBody(req) {
     });
 }
 
-server.listen(3000);
+
+mongoc.connect("mongodb://localhost:27017", { useUnifiedTopology: true }, (err, db) => {
+    dbc = db;
+    dbi = dbc.db("rohit");
+    dbi.createCollection("Sign-up", (error) => {
+        if(!error) {
+            console.log("Ready to Listen");
+            server.listen(3000);
+        }
+        dbi.collection("Sign-up").createIndex( { "email": 1 }, { unique: true } );
+    });
+});
