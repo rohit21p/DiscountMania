@@ -25,7 +25,17 @@ const server = http.createServer((req, res) => {
     }
     if(req.url=="/sign-in") {
         parseBody(req);
-        res.end();
+        req.on('end', () => {
+            dbi.collection("Sign-up").findOne(JSON.parse(body)).then(result=>{
+                console.log(result)
+                if(result!=null) {
+                    res.write(JSON.stringify({status: "loggedIn"}));
+                } else {
+                    res.write(JSON.stringify({status: "failed"}));
+                }
+                res.end();
+            })
+        })
     }
     body = [];
     console.log("request end");
