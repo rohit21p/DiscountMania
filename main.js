@@ -15,11 +15,17 @@ const server = http.createServer((req, res) => {
             dbi.collection("Sign-up").insertOne(JSON.parse(body), (err) => {
                 if(!err) {
                     console.log("Inserted");
+                    res.write(JSON.stringify({
+                        LoggedIn: "true"}
+                        ));
                 } else {
                     console.log(err.errmsg);
-                    res.write(JSON.stringify({err: err.errmsg}));
-                    res.end();
+                    res.write(JSON.stringify({
+                        err: err.errmsg,
+                        LoggedIn: "false"
+                        }));
                 }
+                res.end();
             });
         })
     }
@@ -29,9 +35,9 @@ const server = http.createServer((req, res) => {
             dbi.collection("Sign-up").findOne(JSON.parse(body)).then(result=>{
                 console.log(result)
                 if(result!=null) {
-                    res.write(JSON.stringify({status: "loggedIn"}));
+                    res.write(JSON.stringify({LoggedIn: "true"}));
                 } else {
-                    res.write(JSON.stringify({status: "failed"}));
+                    res.write(JSON.stringify({LoggedIn: "false"}));
                 }
                 res.end();
             })
