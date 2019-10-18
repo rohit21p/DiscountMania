@@ -9,7 +9,7 @@ let body = [];
 const server = http.createServer((req, res) => {
     console.log("Incoming request");
     res.setHeader('Access-Control-Allow-origin', '*');
-    if(req.url=="/sign-up") {
+    if(req.url=="/sign-up" && req.method=="POST") {
         parseBody(req);
         req.on('end', () => {
             dbi.collection("Sign-up").insertOne(JSON.parse(body), (err) => {
@@ -29,7 +29,7 @@ const server = http.createServer((req, res) => {
             });
         })
     }
-    if(req.url=="/sign-in") {
+    if(req.url=="/sign-in" && req.method=="POST") {
         parseBody(req);
         req.on('end', () => {
             dbi.collection("Sign-up").findOne(JSON.parse(body)).then(result=>{
@@ -42,6 +42,9 @@ const server = http.createServer((req, res) => {
                 res.end();
             })
         })
+    }
+    else {
+        res.end();
     }
     body = [];
     console.log("request end");
