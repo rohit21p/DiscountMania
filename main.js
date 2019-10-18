@@ -11,12 +11,23 @@ const server = http.createServer((req, res) => {
     res.setHeader('Access-Control-Allow-origin', '*');
     if(req.url=="/sign-up") {
         parseBody(req);
+        req.on('end', () => {
+            dbi.collection("Sign-up").insertOne(JSON.parse(body), (err) => {
+                if(!err) {
+                    console.log("Inserted");
+                } else {
+                    console.log(err.errmsg);
+                    res.write(JSON.stringify({err: err.errmsg}));
+                    res.end();
+                }
+            });
+        })
     }
     if(req.url=="/sign-in") {
         parseBody(req);
+        res.end();
     }
     body = [];
-    res.end();
     console.log("request end");
 });
 
