@@ -12,7 +12,7 @@ app.use((req, res, next) => {
     next();
 })
 
-app.use('/sign-in', (req,res) => {
+app.post('/sign-in', (req,res) => {
     parseBody(req);
     req.on('end', () => {
         dbi.collection("Sign-up").findOne(JSON.parse(body)).then(result=>{
@@ -27,7 +27,7 @@ app.use('/sign-in', (req,res) => {
     });
 });
 
-app.use('/sign-up', (req,res) => {
+app.post('/sign-up', (req,res) => {
     parseBody(req);
     req.on('end', () => {
         dbi.collection("Sign-up").insertOne(JSON.parse(body), (err) => {
