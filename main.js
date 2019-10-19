@@ -1,56 +1,55 @@
-const http = require('http');
+const express = require('express');
 const mongod = require('mongodb');
 
+const app = express();
 const mongoc = mongod.MongoClient;
 let dbc;
 let dbi;
-
 let body = [];
-const server = http.createServer((req, res) => {
-    console.log("Incoming request");
+
+app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-origin', '*');
-    if(req.url=="/sign-up" && req.method=="POST") {
-        parseBody(req);
-        req.on('end', () => {
-            dbi.collection("Sign-up").insertOne(JSON.parse(body), (err) => {
-                if(!err) {
-                    console.log("Inserted");
-                    res.write(JSON.stringify({
-                        LoggedIn: true
+    next();
+})
+
+app.use('/sign-in', (req,res) => {
+    parseBody(req);
+    req.on('end', () => {
+        dbi.collection("Sign-up").findOne(JSON.parse(body)).then(result=>{
+            console.log(result)
+            if(result!=null) {
+                res.write(JSON.stringify({LoggedIn: true}));
+            } else {
+                res.write(JSON.stringify({LoggedIn: false}));
+            }
+            res.end();
+        })
+    });
+});
+
+app.use('/sign-up', (req,res) => {
+    parseBody(req);
+    req.on('end', () => {
+        dbi.collection("Sign-up").insertOne(JSON.parse(body), (err) => {
+            if(!err) {
+                console.log("Inserted");
+                res.write(JSON.stringify({
+                    LoggedIn: true
+                }));
+            } else {
+                console.log(err.errmsg);
+                res.write(JSON.stringify({
+                    err: err.errmsg,
+                    LoggedIn: false
                     }));
-                } else {
-                    console.log(err.errmsg);
-                    res.write(JSON.stringify({
-                        err: err.errmsg,
-                        LoggedIn: false
-                        }));
-                }
-                res.end();
-            });
-        })
-    }
-    else if(req.url=="/sign-in" && req.method=="POST") {
-        parseBody(req);
-        req.on('end', () => {
-            dbi.collection("Sign-up").findOne(JSON.parse(body)).then(result=>{
-                console.log(result)
-                if(result!=null) {
-                    res.write(JSON.stringify({LoggedIn: true}));
-                } else {
-                    res.write(JSON.stringify({LoggedIn: false}));
-                }
-                res.end();
-            })
-        })
-    }
-    else {
-        res.end();
-    }
-    body = [];
-    console.log("request end");
+            }
+            res.end();
+        });
+    })
 });
 
 function parseBody(req) {
+    body = [];
     req.on('data', (data) => {
         body.push(data);
     });
@@ -67,7 +66,7 @@ mongoc.connect("mongodb://localhost:27017", { useUnifiedTopology: true }, (err, 
     dbi.createCollection("Sign-up", (error) => {
         if(!error) {
             console.log("Ready to Listen");
-            server.listen(3000);
+            app.listen(3000);
         }
         dbi.collection("Sign-up").createIndex( { "email": 1 }, { unique: true } );
     });
