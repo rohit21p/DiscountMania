@@ -29,7 +29,7 @@ const server = http.createServer((req, res) => {
             });
         })
     }
-    if(req.url=="/sign-in" && req.method=="POST") {
+    else if(req.url=="/sign-in" && req.method=="POST") {
         parseBody(req);
         req.on('end', () => {
             dbi.collection("Sign-up").findOne(JSON.parse(body)).then(result=>{
