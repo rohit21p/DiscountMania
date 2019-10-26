@@ -68,6 +68,13 @@ app.get('/isLoggedIn', (req,res) => {
     });
 });
 
+app.get('/logout', (req, res) => {
+    req.session.LoggedIn = false;
+    res.send({
+        LoggedIn: req.session.LoggedIn
+    })
+})
+
 function parseBody(req) {
     body = [];
     req.on('data', (data) => {
