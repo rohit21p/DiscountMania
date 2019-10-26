@@ -58,6 +58,16 @@ app.post('/sign-up', (req,res) => {
     })
 });
 
+
+app.get('/isLoggedIn', (req,res) => {
+    parseBody(req);
+    req.on('end', () => {
+        res.send({
+            LoggedIn: req.session.LoggedIn
+        })
+    });
+});
+
 function parseBody(req) {
     body = [];
     req.on('data', (data) => {
