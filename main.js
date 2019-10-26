@@ -1,5 +1,6 @@
 const express = require('express');
 const mongod = require('mongodb');
+const session = require('express-session')
 
 const app = express();
 const mongoc = mongod.MongoClient;
@@ -7,8 +8,15 @@ let dbc;
 let dbi;
 let body = [];
 
+app.use(session({
+    secret: 'DiscountMania',
+    resave: true,
+    saveUninitialized: false
+}));
+
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-origin', '*');
+    res.setHeader('Access-Control-Allow-origin', req.headers.origin);
+    res.setHeader('Access-Control-Allow-Credentials', true);
     next();
 })
 
@@ -18,9 +26,11 @@ app.post('/sign-in', (req,res) => {
         dbi.collection("Sign-up").findOne(JSON.parse(body)).then(result=>{
             console.log(result)
             if(result!=null) {
+                req.session.LoggedIn = true;
                 res.write(JSON.stringify({LoggedIn: true}));
             } else {
                 res.write(JSON.stringify({LoggedIn: false}));
+                console.log(req.session.LoggedIn);
             }
             res.end();
         })
