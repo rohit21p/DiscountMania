@@ -15,7 +15,10 @@ app.use(session({
 }));
 
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-origin', req.headers.origin);
+    if(req.headers.origin != undefined)
+        res.setHeader('Access-Control-Allow-origin', req.headers.origin);
+    else
+        res.setHeader('Access-Control-Allow-origin', '*'); 
     res.setHeader('Access-Control-Allow-Credentials', true);
     next();
 })
