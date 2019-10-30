@@ -46,6 +46,7 @@ app.post('/sign-up', (req,res) => {
         dbi.collection("Sign-up").insertOne(JSON.parse(body), (err) => {
             if(!err) {
                 console.log("Inserted");
+                req.session.LoggedIn = true;
                 res.write(JSON.stringify({
                     LoggedIn: true
                 }));
