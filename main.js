@@ -79,6 +79,25 @@ app.get('/logout', (req, res) => {
     })
 })
 
+app.post('/create', (req, res) => {
+    parseBody(req)
+    console.log(body);
+    dbi.createCollection("POSTS", () => {
+        dbi.collection("POSTS").insertOne(JSON.parse(body), (err) => {
+            if(err) {
+                console.log(err);
+                res.json({
+                    success: false
+                });
+            } else {
+                res.json({
+                    success: true
+                });
+            }
+        })
+    })
+})
+
 function parseBody(req) {
     body = [];
     req.on('data', (data) => {
