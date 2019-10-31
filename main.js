@@ -98,6 +98,27 @@ app.post('/create', (req, res) => {
     })
 })
 
+app.post('/posts', (req, res) => {
+    parseBody(req)
+    dbi.createCollection("POSTS", () => {
+        dbi.collection("POSTS").find(JSON.parse(body), (err,result) => {
+            if(err) {
+                res.json({
+                    success: false
+                });
+            } else {
+                result.toArray((err, data)=>{
+                    console.log("data", data);
+                    res.json({
+                        result: data,
+                        success: true
+                    });
+                })
+            }
+        })
+    })
+})
+
 function parseBody(req) {
     body = [];
     req.on('data', (data) => {
