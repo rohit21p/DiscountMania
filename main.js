@@ -185,7 +185,7 @@ app.post('/setup', (req,res) => {
     })
     req.on('end', ()=>{
         body = Buffer.concat(body).toString();
-        amount = JSON.parse(body).amount;
+        amount = +(JSON.parse(body).amount);
         amount = amount.toFixed(2);
         req.session.amount = amount;
         res.end();
@@ -203,7 +203,7 @@ app.get('/paytm', (req,res) => {
     params['TXN_AMOUNT']			= req.session.amount;
     params['CALLBACK_URL']		= 'http://localhost:'+3000+'/callback';
     params['EMAIL']				= 'abc@mailinator.com';
-    params['MOBILE_NO']			= '9669872071';
+    params['MOBILE_NO']			= req.session.mobile || '9669872071';
 
     checksum_lib.genchecksum(params, PaytmConfig.key, function (err, checksum) {
 
