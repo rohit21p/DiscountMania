@@ -190,9 +190,11 @@ app.post('/setup', (req,res) => {
     })
     req.on('end', ()=>{
         body = Buffer.concat(body).toString();
-        amount = +(JSON.parse(body).amount);
+        body = JSON.parse(body);
+        amount = +(body.amount);
         amount = amount.toFixed(2);
         req.session.amount = amount;
+        req.session.order = (req.session.paytm || '9669872071' ) + body._id;
         res.end();
     })
 })
@@ -203,7 +205,8 @@ app.get('/paytm', (req,res) => {
     params['WEBSITE']				= PaytmConfig.website;
     params['CHANNEL_ID']			= 'WEB';
     params['INDUSTRY_TYPE_ID']	= 'Retail';
-    params['ORDER_ID']			= 'TEST_'  + new Date().getTime();
+    // params['ORDER_ID']			= 'TEST_'  + new Date().getTime();
+    params['ORDER_ID']          = req.session.order || 'TEST_'  + new Date().getTime();
     params['CUST_ID'] 			= 'Customer001';
     params['TXN_AMOUNT']			= req.session.amount;
     params['CALLBACK_URL']		= 'http://localhost:'+3000+'/callback';
