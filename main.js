@@ -48,7 +48,8 @@ app.post('/sign-in', (req,res) => {
 app.post('/sign-up', (req,res) => {
     parseBody(req);
     req.on('end', () => {
-        dbi.collection("Sign-up").insertOne(JSON.parse(body), (err) => {
+        body = JSON.parse(body)
+        dbi.collection("Sign-up").insertOne(body, (err) => {
             if(!err) {
                 console.log("Inserted");
                 req.session.LoggedIn = true;
