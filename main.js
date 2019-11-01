@@ -157,6 +157,7 @@ app.post('/payment-status/:_id', (req, res) => {
             payment: true
         })
         ee.removeListener(success_event, does)
+        ee.removeListener(fail_event, does2)
     }
     ee.on(success_event, does);
     fail_event = 'payment-fail-' + req.session.mobile + req.params._id;
@@ -164,6 +165,7 @@ app.post('/payment-status/:_id', (req, res) => {
         res.send({
             payment: false
         })
+        ee.removeListener(success_event, does)
         ee.removeListener(fail_event, does2)
     }
     ee.on(fail_event, does2);
@@ -310,8 +312,16 @@ app.post('/callback', (req,res) => {
                         status: response.STATUS
                     } 
 
-                    if(response.STATUS === 'TXN_SUCCESS')
+                    if(response.STATUS === 'TXN_SUCCESS') {
                         ee.emit('payment-success-'+response.ORDERID);
+                        console.log('payment-success-'+response.ORDERID)
+                        dbi.createCollection("Transactions", () => {
+                            transaction = {...response,
+                            post_id: response.ORDERID.slice(10)};
+                            console.log(transaction);
+                            dbi.collection("Transactions").insertOne(transaction, () => {});
+                        });
+                    }
                     else
                         ee.emit('payment-fail-'+response.ORDERID);
 
