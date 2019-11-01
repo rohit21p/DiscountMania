@@ -1,6 +1,8 @@
 const express = require('express');
 const mongod = require('mongodb');
 const session = require('express-session')
+var events = require('events');
+var ee = new events.EventEmitter();
 
 const app = express();
 const mongoc = mongod.MongoClient;
@@ -147,6 +149,26 @@ app.post('/post', (req, res) => {
     })
 })
 
+
+app.post('/payment-status/:_id', (req, res) => {
+    success_event = 'payment-success-' + req.session.mobile + req.params._id;
+    does = () => {
+        res.send({
+            payment: true
+        })
+        ee.removeListener(success_event, does)
+    }
+    ee.on(success_event, does);
+    fail_event = 'payment-fail-' + req.session.mobile + req.params._id;
+    does2 = () => {
+        res.send({
+            payment: false
+        })
+        ee.removeListener(fail_event, does2)
+    }
+    ee.on(fail_event, does2);
+})
+
 function parseBody(req) {
     body = [];
     req.on('data', (data) => {
@@ -194,7 +216,7 @@ app.post('/setup', (req,res) => {
         amount = +(body.amount);
         amount = amount.toFixed(2);
         req.session.amount = amount;
-        req.session.order = (req.session.paytm || '9669872071' ) + body._id;
+        req.session.order = (req.session.mobile || '9669872071' ) + body._id;
         res.end();
     })
 })
@@ -278,7 +300,7 @@ app.post('/callback', (req,res) => {
                 });
 
                 post_res.on('end', function(){
-                    response = JSON.parse(response.TXNID);
+                    response = JSON.parse(response);
                     console.log('S2S Response: ', response, "\n");
                     
                     html = "<script> window.close() </script>";
@@ -287,7 +309,11 @@ app.post('/callback', (req,res) => {
                         id: response.TXNID,
                         status: response.STATUS
                     } 
-                    console.log(req.session);
+
+                    if(response.STATUS === 'TXN_SUCCESS')
+                        ee.emit('payment-success-'+response.ORDERID);
+                    else
+                        ee.emit('payment-fail-'+response.ORDERID);
 
                     res.writeHead(200, {'Content-Type': 'text/html'});
                     res.write(html);
@@ -301,3 +327,4 @@ app.post('/callback', (req,res) => {
         });
     });
 })
+
