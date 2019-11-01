@@ -26,10 +26,13 @@ app.use((req, res, next) => {
 app.post('/sign-in', (req,res) => {
     parseBody(req);
     req.on('end', () => {
-        dbi.collection("Sign-up").findOne(JSON.parse(body)).then(result=>{
+        body = JSON.parse(body);
+        dbi.collection("Sign-up").findOne(body).then(result=>{
             console.log(result)
             if(result!=null) {
                 req.session.LoggedIn = true;
+                req.session.name = result.name;
+                req.session.mobile = result.paytm;
                 res.write(JSON.stringify({LoggedIn: true}));
             } else {
                 res.write(JSON.stringify({LoggedIn: false}));
@@ -47,6 +50,8 @@ app.post('/sign-up', (req,res) => {
             if(!err) {
                 console.log("Inserted");
                 req.session.LoggedIn = true;
+                req.session.name = body.name;
+                req.session.mobile = body.paytm;
                 res.write(JSON.stringify({
                     LoggedIn: true
                 }));
