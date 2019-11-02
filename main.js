@@ -193,6 +193,7 @@ mongoc.connect("mongodb://localhost:27017", { useUnifiedTopology: true }, (err, 
             app.listen(3000);
         }
         dbi.collection("Sign-up").createIndex( { "email": 1 }, { unique: true } );
+        dbi.collection("Sign-up").createIndex( { "paytm": 1 }, { unique: true } );
     });
 });
 
