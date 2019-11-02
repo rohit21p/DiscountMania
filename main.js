@@ -91,7 +91,10 @@ app.post('/create', (req, res) => {
     parseBody(req)
     console.log(body);
     dbi.createCollection("POSTS", () => {
-        dbi.collection("POSTS").insertOne(JSON.parse(body), (err) => {
+        dbi.collection("POSTS").insertOne({...JSON.parse(body), 
+            by: req.session.name,
+            by_phone: req.session.mobile
+        }, (err) => {
             if(err) {
                 console.log(err);
                 res.json({
