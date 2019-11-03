@@ -326,6 +326,12 @@ app.post('/callback', (req,res) => {
                             console.log(transaction);
                             dbi.collection("Transactions").insertOne(transaction, () => {});
                         });
+                        dbi.createCollection('bought',()=>{
+                            dbi.collection('bought').insertOne({
+                                by: response.ORDERID.slice(0, 10),
+                                post: response.ORDERID.slice(10)
+                            });
+                        })
                     }
                     else
                         ee.emit('payment-fail-'+response.ORDERID);
