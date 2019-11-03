@@ -320,12 +320,6 @@ app.post('/callback', (req,res) => {
                     if(response.STATUS === 'TXN_SUCCESS') {
                         ee.emit('payment-success-'+response.ORDERID);
                         console.log('payment-success-'+response.ORDERID)
-                        dbi.createCollection("Transactions", () => {
-                            transaction = {...response,
-                            post_id: response.ORDERID.slice(10)};
-                            console.log(transaction);
-                            dbi.collection("Transactions").insertOne(transaction, () => {});
-                        });
                         dbi.createCollection('bought',()=>{
                             dbi.collection('bought').insertOne({
                                 by: response.ORDERID.slice(0, 10),
@@ -335,6 +329,14 @@ app.post('/callback', (req,res) => {
                     }
                     else
                         ee.emit('payment-fail-'+response.ORDERID);
+
+                    
+                    dbi.createCollection("Transactions", () => {
+                        transaction = {...response,
+                        post_id: response.ORDERID.slice(10)};
+                        console.log(transaction);
+                        dbi.collection("Transactions").insertOne(transaction, () => {});
+                    });
 
                     res.writeHead(200, {'Content-Type': 'text/html'});
                     res.write(html);
