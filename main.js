@@ -175,6 +175,39 @@ app.post('/payment-status/:_id', (req, res) => {
     ee.on(fail_event, does2);
 })
 
+app.post('/profile', (req, res) => {
+    let profile;
+    let reply = () => {
+        res.json(profile);
+    }
+    dbi.collection("Sign-up").findOne({
+        paytm: req.session.mobile
+    }).then(result=>{
+        profile = result;
+        profile.bposts = [];
+        dbi.collection('bought').find({by: req.session.mobile}, (err, data)=> {
+            data.toArray((err, dataa)=> {
+                dataa.forEach(async element => {
+                    await dbi.collection("POSTS").findOne({_id: mongod.ObjectID(element.post)}, (err, result) => {
+                        profile.bposts.push(result);
+                    })
+                });
+                profile.pposts = [];
+                dbi.collection('POSTS').find({
+                    by_phone: req.session.mobile
+                }, (err, data)=> {
+                    data.toArray((err, dataa)=> {
+                        dataa.forEach(element => {
+                            profile.pposts.push(element);
+                        })
+                        reply();
+                    });
+                })
+            });
+        })
+    })
+});
+
 function parseBody(req) {
     body = [];
     req.on('data', (data) => {
