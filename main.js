@@ -29,44 +29,72 @@ app.post('/sign-in', (req,res) => {
     parseBody(req);
     req.on('end', () => {
         body = JSON.parse(body);
-        dbi.collection("Sign-up").findOne(body).then(result=>{
-            console.log(result)
-            if(result!=null) {
-                req.session.LoggedIn = true;
-                req.session.name = result.name;
-                req.session.mobile = result.paytm;
-                res.write(JSON.stringify({LoggedIn: true}));
-            } else {
-                res.write(JSON.stringify({LoggedIn: false}));
-                console.log(req.session.LoggedIn);
-            }
-            res.end();
-        })
+        if (!body.email || body.email.trim() === '' || !body.password || body.password.trim() === '') {
+            res.json({
+                LoggedIn: 'incomplete form'
+            })
+        } else {
+            dbi.collection("Sign-up").findOne(body).then(result=>{
+                console.log(result)
+                if(result!=null) {
+                    req.session.LoggedIn = true;
+                    req.session.name = result.name;
+                    req.session.mobile = result.paytm;
+                    res.write(JSON.stringify({LoggedIn: true}));
+                } else {
+                    res.write(JSON.stringify({LoggedIn: false}));
+                    console.log(req.session.LoggedIn);
+                }
+                res.end();
+            })
+        }
     });
 });
+
+function emailIsValid (email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
 
 app.post('/sign-up', (req,res) => {
     parseBody(req);
     req.on('end', () => {
         body = JSON.parse(body)
-        dbi.collection("Sign-up").insertOne(body, (err) => {
-            if(!err) {
-                console.log("Inserted");
-                req.session.LoggedIn = true;
-                req.session.name = body.name;
-                req.session.mobile = body.paytm;
-                res.write(JSON.stringify({
-                    LoggedIn: true
-                }));
-            } else {
-                console.log(err.errmsg);
-                res.write(JSON.stringify({
-                    err: err.errmsg,
-                    LoggedIn: false
+        if (body.name == undefined || body.name.length < 4) {
+            res.json({
+                LoggedIn: 'small username'
+            })
+        } else if (body.password == undefined ||body.password.length < 8) {
+            res.json({
+                LoggedIn: 'small password'
+            })
+        } else if (body.paytm == undefined || body.paytm.length != 10 || body.paytm.indexOf('+91') != -1 || isNaN(body.paytm)) {
+            res.json({
+                LoggedIn: 'invalid mobile number'
+            })
+        } else if (body.email == undefined || !emailIsValid(body.email)) {
+            res.json({
+                LoggedIn: 'invalid email'
+            })
+        } else {
+            dbi.collection("Sign-up").insertOne(body, (err) => {
+                if(!err) {
+                    console.log("Inserted");
+                    req.session.LoggedIn = true;
+                    req.session.name = body.name;
+                    req.session.mobile = body.paytm;
+                    res.write(JSON.stringify({
+                        LoggedIn: true
                     }));
-            }
-            res.end();
-        });
+                } else {
+                    console.log(err.errmsg);
+                    res.write(JSON.stringify({
+                        err: err.errmsg,
+                        LoggedIn: false
+                        }));
+                }
+                res.end();
+            });
+        }
     })
 });
 
@@ -90,23 +118,37 @@ app.get('/logout', (req, res) => {
 app.post('/create', (req, res) => {
     parseBody(req)
     console.log(body);
-    dbi.createCollection("POSTS", () => {
-        dbi.collection("POSTS").insertOne({...JSON.parse(body), 
-            by: req.session.name,
-            by_phone: req.session.mobile
-        }, (err) => {
-            if(err) {
-                console.log(err);
-                res.json({
-                    success: false
-                });
-            } else {
-                res.json({
-                    success: true
-                });
-            }
+    if (!body.title || !body.cap || !body.category || !body.predesc || !body.comdesc ||
+        !body.price || !body.worth || !body.validty || !body.prereq || !body.by) {
+            res.json({
+                success: 'incomplete form'
+            })
+        }
+    else if (body.title.trim() == '' || body.cap.trim() == '' || body.category.trim() == '' || body.predesc.trim() == '' || body.comdesc.trim() == '' ||
+        body.price.trim() == '' || body.worth.trim() == '' || body.validty.trim() == '' || body.prereq.trim() == '' || body.by.trim() == '') {
+            res.json({
+                success: 'incomplete form'
+            })
+        }
+    else {
+        dbi.createCollection("POSTS", () => {
+            dbi.collection("POSTS").insertOne({...JSON.parse(body), 
+                by: req.session.name,
+                by_phone: req.session.mobile
+            }, (err) => {
+                if(err) {
+                    console.log(err);
+                    res.json({
+                        success: false
+                    });
+                } else {
+                    res.json({
+                        success: true
+                    });
+                }
+            })
         })
-    })
+    }
 })
 
 app.post('/posts', (req, res) => {
