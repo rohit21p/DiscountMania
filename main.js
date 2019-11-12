@@ -116,39 +116,47 @@ app.get('/logout', (req, res) => {
 })
 
 app.post('/create', (req, res) => {
-    parseBody(req)
-    console.log(body);
-    if (!body.title || !body.cap || !body.category || !body.predesc || !body.comdesc ||
-        !body.price || !body.worth || !body.validty || !body.prereq || !body.by) {
-            res.json({
-                success: 'incomplete form'
+    body = [];
+    req.on('data', (data) => {
+        body.push(data);
+    });
+    req.on('end', () => {
+        body = Buffer.concat(body).toString();
+        console.log(body);
+        body = JSON.parse(body);
+        if (!body.title || !body.cap || !body.category || !body.predesc || !body.comdesc ||
+            !body.price || !body.worth || !body.validity || !body.prereq) {
+                res.json({
+                    success: 'incomplete form'
+                });
+            }
+        else if (body.title.trim() == '' || body.cap.trim() == '' || body.category.trim() == '' || body.predesc.trim() == '' || body.comdesc.trim() == '' ||
+            body.price.trim() == '' || body.worth.trim() == '' || body.validity.trim() == '' || body.prereq.trim() == '') {
+                res.json({
+                    success: 'incomplete form'
+                })
+            }
+        else {
+            dbi.createCollection("POSTS", () => {
+                dbi.collection("POSTS").insertOne({...body, 
+                    by: req.session.name,
+                    by_phone: req.session.mobile,
+                    sold : 0
+                }, (err) => {
+                    if(err) {
+                        console.log(err);
+                        res.json({
+                            success: false
+                        });
+                    } else {
+                        res.json({
+                            success: true
+                        });
+                    }
+                })
             })
         }
-    else if (body.title.trim() == '' || body.cap.trim() == '' || body.category.trim() == '' || body.predesc.trim() == '' || body.comdesc.trim() == '' ||
-        body.price.trim() == '' || body.worth.trim() == '' || body.validty.trim() == '' || body.prereq.trim() == '' || body.by.trim() == '') {
-            res.json({
-                success: 'incomplete form'
-            })
-        }
-    else {
-        dbi.createCollection("POSTS", () => {
-            dbi.collection("POSTS").insertOne({...JSON.parse(body), 
-                by: req.session.name,
-                by_phone: req.session.mobile
-            }, (err) => {
-                if(err) {
-                    console.log(err);
-                    res.json({
-                        success: false
-                    });
-                } else {
-                    res.json({
-                        success: true
-                    });
-                }
-            })
-        })
-    }
+    });
 })
 
 app.post('/posts', (req, res) => {
