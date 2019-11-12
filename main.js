@@ -409,6 +409,11 @@ app.post('/callback', (req,res) => {
                                 post: response.ORDERID.slice(10)
                             });
                         })
+                        dbi.collection('POSTS').updateOne({ _id: mongod.ObjectID(response.ORDERID.slice(10)) }, 
+                        {$inc: {'sold': 1}},
+                        (err) => {
+                            console.log(err)
+                        });
                     }
                     else
                         ee.emit('payment-fail-'+response.ORDERID);
