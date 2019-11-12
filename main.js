@@ -109,10 +109,14 @@ app.get('/isLoggedIn', (req,res) => {
 });
 
 app.get('/logout', (req, res) => {
+    let name = req.session.name;
     req.session.LoggedIn = false;
-    res.send({
-        LoggedIn: req.session.LoggedIn
-    })
+    req.session.destroy(()=> {
+        console.log(name + ' logged out')
+        res.send({
+            LoggedIn: false
+        })
+    });
 })
 
 app.post('/create', (req, res) => {
