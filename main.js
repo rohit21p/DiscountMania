@@ -262,6 +262,39 @@ app.post('/profile', (req, res) => {
     })
 });
 
+app.get('/releasefunds', (req, res) => {
+    if (req.session.LoggedIn) {
+        dbi.createCollection('requests', (err) => {
+            if(!err) {
+                dbi.collection('requests').insertOne({
+                    by: req.session.name,
+                    mobile: req.session.mobile
+                }, (err) => {
+                    if(!err) {
+                        res.json({
+                            status: 'Request generated'
+                        })
+                    } else {
+                        console.log(err);
+                        res.json({
+                            status: 'err'
+                        })
+                    }
+                });
+            } else {
+                console.log(err);
+                res.json({
+                    status: 'err'
+                })
+            }
+        })
+    } else {
+        res.json({
+            status: 'Login first'
+        })
+    }
+})
+
 function parseBody(req) {
     body = [];
     req.on('data', (data) => {
